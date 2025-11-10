@@ -41,14 +41,16 @@ Unsafe content triggers **Slack/Email alerts**, and analytics endpoints offer us
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
-2️⃣ Install Dependencies
-```
+
+### 2️⃣ Install Dependencies
+```powershell
 pip install -r requirements.txt
 ```
-3️⃣ Configure Environment
-```
-Create a .env file in your project root:
 
+### 3️⃣ Configure Environment
+Create a `.env` file in your project root:
+
+```ini
 DEBUG=true
 DJANGO_SECRET_KEY=dev-secret-key-change-me
 ALLOWED_HOSTS=*
@@ -64,107 +66,139 @@ BREVO_API_KEY=
 BREVO_SENDER_EMAIL=noreply@example.com
 BREVO_SENDER_NAME=Moderator
 ```
+---
 
-4️⃣ Run Migrations
-```
+### 4️⃣ Run Migrations
+```powershell
 python manage.py migrate
 ```
-5️⃣ Start the Server
-```
+
+### 5️⃣ Start the Server
+```powershell
 python manage.py runserver
 ```
-🌐 API Endpoints
-```
-📝 POST /api/v1/moderate/text
-```
-```
-Request:
 
-{
-  "email": "user@example.com",
-  "text": "some text here"
-}
+---
 
-```
-```
-Response:
+## 📡 **API Endpoints**
 
-{
-  "request_id": 1,
-  "classification": "safe",
-  "confidence": 0.9,
-  "reasoning": "Text appears harmless."
-}
-```
+### 🧾 **Text Moderation**
 
-🖼️ POST /api/v1/moderate/image
-```
-Request (multipart):
+#### 🔹 Moderate Text
+**Endpoint:** `POST /api/v1/moderate/text`
 
-email: string
-
-image: file
-```
-Response: Same as text moderation.
-```
-```
-📊 GET /api/v1/analytics/summary?user=user@example.com
-```
-```
-Response:
-
-{
-  "user": "user@example.com",
-  "counts": {
-    "safe": 10,
-    "toxic": 1,
-    "harassment": 0,
-    "spam": 2
+- **Request Body:**
+  ```json
+  {
+    "email": "user@example.com",
+    "text": "some text here"
   }
-}
-```
+  ```
 
-🧱 Data Model
+- **Response:**
+  ```json
+  {
+    "request_id": 1,
+    "classification": "safe",
+    "confidence": 0.9,
+    "reasoning": "Text appears harmless."
+  }
+  ```
 
+---
 
-Model	Fields	Description
-ModerationRequest	id, user_email, content_type, content_hash, status, created_at	Tracks moderation requests
-ModerationResult	request_id, classification, confidence, reasoning, llm_response	Stores analysis result
-NotificationLog	request_id, channel, status, sent_at, details	Tracks alert delivery
-💡 Design Choices
+### 🖼️ **Image Moderation**
 
-✅ Django + DRF → Rapid, maintainable API development
-✅ Service Modules → Separation of logic (moderation, LLM, notifications)
-✅ Offline Support → Works without API keys via stub mode
-✅ Safe Fallbacks → Ensures predictable results on provider errors
-✅ Minimal Config → Environment-driven setup for easy deployment
+#### 🔹 Moderate Image
+**Endpoint:** `POST /api/v1/moderate/image`
 
-🧪 Testing with cURL
+- **Request (multipart/form-data):**
+  - `email`: string  
+  - `image`: file
+
+- **Response:**
+  ```json
+  {
+    "request_id": 2,
+    "classification": "harassment",
+    "confidence": 0.87,
+    "reasoning": "Detected offensive visual content."
+  }
+  ```
+
+---
+
+### 📊 **Analytics Endpoints**
+
+#### 🔹 Get User Moderation Summary
+**Endpoint:** `GET /api/v1/analytics/summary?user=<email>`
+
+- **Parameters:**
+  - `user`: The email address of the user to fetch analytics for.
+
+- **Response:**
+  ```json
+  {
+    "user": "user@example.com",
+    "counts": {
+      "safe": 10,
+      "toxic": 1,
+      "harassment": 0,
+      "spam": 2
+    }
+  }
+  ```
+
+---
+
+## 🧱 **Data Model**
+
+| Model | Fields | Description |
+|--------|---------|-------------|
+| **ModerationRequest** | `id`, `user_email`, `content_type`, `content_hash`, `status`, `created_at` | Tracks moderation requests |
+| **ModerationResult** | `request_id`, `classification`, `confidence`, `reasoning`, `llm_response` | Stores analysis result |
+| **NotificationLog** | `request_id`, `channel`, `status`, `sent_at`, `details` | Tracks alert delivery |
+
+---
+
+## 💡 **Design Choices**
+✅ **Django + DRF** → Rapid, maintainable API development  
+✅ **Service Modules** → Separation of logic (moderation, LLM, notifications)  
+✅ **Offline Support** → Works without API keys via stub mode  
+✅ **Safe Fallbacks** → Ensures predictable results on provider errors  
+✅ **Minimal Config** → Environment-driven setup for easy deployment  
+
+---
+
+## 🧪 **Testing with cURL**
+
+```bash
 # Moderate text
-
-
 curl -X POST http://localhost:8000/api/v1/moderate/text ^
   -H "Content-Type: application/json" ^
   -d "{\"email\":\"user@example.com\",\"text\":\"You are an idiot\"}"
+```
 
+```bash
 # Moderate image
-
-
 curl -X POST http://localhost:8000/api/v1/moderate/image ^
   -F "email=user@example.com" ^
   -F "image=@C:/path/to/image.png"
+```
 
+```bash
 # Analytics summary
-
-
 curl "http://localhost:8000/api/v1/analytics/summary?user=user@example.com"
+```
 
-🧩 Project Structure
+---
+
+## 🧩 **Project Structure**
 
 ```
-moderator/
+smart_moderator/
 │
-├── api/
+├── moderator/
 │   ├── views.py
 │   ├── serializers.py
 │   └── urls.py
@@ -180,18 +214,26 @@ moderator/
 ├── manage.py
 └── .env
 ```
-🧭 Future Enhancements
 
- Add Celery + Redis for async moderation
+---
 
- User dashboards for analytics
+## 🧭 **Future Enhancements**
+- [ ] Add Celery + Redis for async moderation  
+- [ ] User dashboards for analytics  
+- [ ] Video & audio moderation support  
+- [ ] Prometheus/Grafana integration for advanced metrics  
 
- Video & audio moderation support
+---
 
- Prometheus/Grafana integration for advanced metrics
+## 👨‍💻 **Author**
+**[M.varshith]**  
 
-👨‍💻 Author
 
-[M.varshith ]
-📧 varshithmaredoju004.@gmail.com
+---
 
+
+
+---
+
+## ⭐ **Support**
+If you like this project, give it a ⭐ on GitHub — it helps others find it and keeps me motivated! 💖
