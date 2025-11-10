@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific
+db.sqlite3
+*.sqlite3
+*.sqlite3-journal
+media/
+staticfiles/
+
+# Environment variables
+.env
+
+# Python artifacts
+.venv/
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE / Editor
+.idea/
+.vscode/
+*.code-workspace
+
+# OS files
+Thumbs.db
+.DS_Store
+
+
